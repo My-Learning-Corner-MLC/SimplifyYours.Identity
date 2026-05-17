@@ -1,0 +1,17 @@
+bin/
+obj/
+*.user
+*.suo
+*.lscache
+
+.vs/
+.vscode/
+.idea/
+TestResults/
+coverage/
+coverage.cobertura.xml
+*.nupkg
+
+appsettings.Local.json
+appsettings.Production.json
+.env
