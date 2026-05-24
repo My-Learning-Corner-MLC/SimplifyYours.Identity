@@ -1,13 +1,18 @@
 using IdentityService.Api.Endpoints;
-using IdentityService.Application.Ping;
+using IdentityService.Application;
+using IdentityService.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddScoped<IPingService, PingService>();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapAuthEndpoints();
 app.MapPingEndpoints();
 
 app.Run();
