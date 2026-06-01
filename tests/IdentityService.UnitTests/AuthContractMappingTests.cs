@@ -1,7 +1,6 @@
 using IdentityService.Application.SignIn;
 using IdentityService.Application.SignUp;
 using IdentityService.Contracts;
-using IdentityService.Contracts.SignIn;
 using IdentityService.Contracts.SignUp;
 using IdentityService.Domain.Identity;
 
@@ -26,17 +25,6 @@ public sealed class AuthContractMappingTests
         Assert.Equal(request.Password, command.Password);
         Assert.Equal(request.ConfirmPassword, command.ConfirmPassword);
         Assert.Equal(request.AcceptTermsAndPrivacy, command.AcceptTermsAndPrivacy);
-    }
-
-    [Fact]
-    public void SignInCommand_FromRequest_CopiesRequestValues()
-    {
-        var request = new SignInRequest("avery@example.com", "Password1!");
-
-        var command = SignInCommand.FromRequest(request);
-
-        Assert.Equal(request.Email, command.Email);
-        Assert.Equal(request.Password, command.Password);
     }
 
     [Fact]

@@ -1,0 +1,20 @@
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    background: #f5f7fb;
+    color: #172033;
+    font-family: "Aptos", "Segoe UI", sans-serif;
+}
+
+.auth-page {
+    min-height: 100vh;
+}
+
+.auth-card {
+    border-radius: 8px;
+    border: 1px solid #d9e0ea;
+}

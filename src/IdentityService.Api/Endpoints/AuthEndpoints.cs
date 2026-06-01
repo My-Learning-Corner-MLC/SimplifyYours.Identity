@@ -1,4 +1,3 @@
-using IdentityService.Api.Endpoints.SignIn;
 using IdentityService.Api.Endpoints.SignUp;
 
 namespace IdentityService.Api.Endpoints;
@@ -14,10 +13,8 @@ internal static class AuthEndpoints
             .WithName("SignUp")
             .AllowAnonymous();
 
-        group
-            .MapPost("sign-in", SignInEndpoints.SignInAsync)
-            .WithName("SignIn")
-            .AllowAnonymous();
+        // OpenIddict handles /auth/sign-in and /auth/token. Razor Pages provide
+        // the hosted sign-in UI through authorization endpoint passthrough.
 
         return endpoints;
     }

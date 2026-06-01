@@ -51,8 +51,10 @@ public static class DependencyInjection
             })
             .AddServer(options =>
             {
-                options.SetTokenEndpointUris("/auth/sign-in");
-                options.AllowPasswordFlow();
+                options.SetAuthorizationEndpointUris("/auth/sign-in");
+                options.SetTokenEndpointUris("/auth/token");
+                options.AllowAuthorizationCodeFlow()
+                    .RequireProofKeyForCodeExchange();
                 options.AllowRefreshTokenFlow();
                 options.AcceptAnonymousClients();
                 options.RegisterScopes(
@@ -63,7 +65,7 @@ public static class DependencyInjection
                 options.AddDevelopmentEncryptionCertificate()
                     .AddDevelopmentSigningCertificate();
                 options.UseAspNetCore()
-                    .EnableTokenEndpointPassthrough();
+                    .EnableAuthorizationEndpointPassthrough();
             });
 
         services.AddAuthentication();

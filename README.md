@@ -29,14 +29,23 @@ Responses:
 - `201 Created` with the created user identity summary.
 - `400 Bad Request` with authentication errors when sign-up fails.
 
-### `POST /auth/sign-in`
+### `GET|POST /auth/sign-in`
 
-OpenIddict token endpoint for password sign-in.
+OpenIddict authorization endpoint with a hosted Razor Pages + Bootstrap sign-in
+UI for authorization code issuance.
 
 Responses:
 
-- `200 OK` with the OpenIddict token response when credentials are valid.
-- `403 Forbidden` with OpenIddict `invalid_grant` details when the grant type or credentials are invalid.
+- `200 OK` with the hosted sign-in UI for valid authorization requests.
+- `400 Bad Request` with a hosted UI message listing missing/invalid authorization parameters.
+- Redirect responses for authorization flow completion/errors per OAuth/OIDC.
+
+### `POST /auth/token`
+
+OpenIddict token endpoint for:
+
+- `grant_type=authorization_code`
+- `grant_type=refresh_token`
 
 ## Configuration
 
@@ -44,17 +53,57 @@ The service requires `ConnectionStrings:IdentityServiceDb` at runtime. Keep real
 connection strings out of source control and provide them through environment
 variables, user secrets, or local-only configuration.
 
-## Sign-In Token Request
+## Authorization Code + PKCE Flow
 
-`POST /auth/sign-in` uses OpenIddict token endpoint handling. Submit credentials
-as form data:
+`/auth/sign-in` is the authorization endpoint and `/auth/token` is the token
+exchange endpoint. Password grant is not supported.
+
+Before testing the flow, register a local OpenIddict client using:
 
 ```text
-grant_type=password
-username=user@example.com
-password=<password>
-scope=email profile roles offline_access
+code/backend/samples/identity-service/Seed OpenIddict Client.sql
 ```
+
+### 1) Authorization Request
+
+Open this URL in a browser:
+
+```text
+https://localhost:15200/auth/sign-in?client_id=1708699d-f872-463b-a255-bda71e97a265&redirect_uri=https%3A%2F%2Flocalhost%3A4200%2Fauth%2Fcallback&response_type=code&response_mode=query&scope=openid%20profile%20email%20roles%20offline_access&state=test-state-123&nonce=test-nonce-123&code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM&code_challenge_method=S256
+```
+
+Example PKCE verifier/challenge pair used above:
+
+```text
+code_verifier=dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk
+code_challenge=E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM
+code_challenge_method=S256
+```
+
+### 2) Exchange Authorization Code
+
+Copy the fresh `code` query value from the redirect after each successful
+hosted sign-in. Authorization codes are single-use and are bound to the
+`client_id`, `redirect_uri`, and PKCE verifier used by the authorization
+request.
+
+```bash
+curl -X POST "https://localhost:15200/auth/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=authorization_code&client_id=1708699d-f872-463b-a255-bda71e97a265&code=<authorization_code>&redirect_uri=https%3A%2F%2Flocalhost%3A4200%2Fauth%2Fcallback&code_verifier=dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+```
+
+### 3) Refresh Token Exchange
+
+```bash
+curl -X POST "https://localhost:15200/auth/token" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=refresh_token&client_id=1708699d-f872-463b-a255-bda71e97a265&refresh_token=<refresh_token>"
+```
+
+## Bruno Samples
+
+Use the shared backend Bruno collection at `code/backend/samples/identity-service/`.
 
 ## Developer Commands
 
