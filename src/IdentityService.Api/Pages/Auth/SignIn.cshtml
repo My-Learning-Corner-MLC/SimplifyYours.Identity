@@ -1,0 +1,67 @@
+@page "/auth/sign-in"
+@model IdentityService.Api.Pages.Auth.SignInModel
+@{
+    Layout = "/Pages/Shared/_AuthLayout.cshtml";
+}
+
+<main class="auth-page d-flex align-items-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
+                <section class="auth-card bg-white shadow-sm">
+                    <div class="p-4 p-sm-5">
+                        <h1 class="h3 mb-2">Sign in</h1>
+                        <p class="text-body-secondary mb-4">Continue to Simplify Yours</p>
+
+                        @if (Model.ShowInvalidAuthorizationRequestError)
+                        {
+                            <div class="alert alert-warning" role="alert">
+                                @Model.InvalidAuthorizationRequestErrorMessage
+                            </div>
+                        }
+
+                        @if (Model.ShowInvalidCredentialsError)
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                Invalid email or password.
+                            </div>
+                        }
+
+                        @if (!Model.ShowInvalidAuthorizationRequestError)
+                        {
+                            <form method="post" action="@Model.FormAction" novalidate>
+                                @Html.AntiForgeryToken()
+                                @foreach (var parameter in Model.AuthorizationParameters)
+                                {
+                                    <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+                                }
+
+                                <div class="mb-3">
+                                    <label for="sign-in-email" class="form-label">Email</label>
+                                    <input id="sign-in-email"
+                                           name="@Model.EmailFieldName"
+                                           type="email"
+                                           class="form-control form-control-lg"
+                                           autocomplete="username"
+                                           required />
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="sign-in-password" class="form-label">Password</label>
+                                    <input id="sign-in-password"
+                                           name="@Model.PasswordFieldName"
+                                           type="password"
+                                           class="form-control form-control-lg"
+                                           autocomplete="current-password"
+                                           required />
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-lg w-100">Sign in</button>
+                            </form>
+                        }
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
