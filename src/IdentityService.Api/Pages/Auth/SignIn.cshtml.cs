@@ -11,7 +11,9 @@ using OpenIddict.Server.AspNetCore;
 
 namespace IdentityService.Api.Pages.Auth;
 
-public sealed class SignInModel(ISender sender) : PageModel
+public sealed class SignInModel(
+    ISender sender,
+    ILogger<SignInModel> logger) : PageModel
 {
     private static readonly string[] AuthorizationParameterNames =
     [
@@ -55,11 +57,13 @@ public sealed class SignInModel(ISender sender) : PageModel
 
         if (!TryValidateAuthorizationParameters(AuthorizationParameters, out var invalidRequestMessage))
         {
+            logger.LogWarning("Hosted sign-in GET rejected because authorization parameters were invalid.");
             return RenderInvalidAuthorizationRequest(invalidRequestMessage);
         }
 
         if (HttpContext.GetOpenIddictServerRequest() is null)
         {
+            logger.LogWarning("Hosted sign-in GET rejected because OpenIddict request was unavailable.");
             return RenderInvalidAuthorizationRequest("The authorization request could not be validated.");
         }
 
@@ -78,6 +82,7 @@ public sealed class SignInModel(ISender sender) : PageModel
 
         if (!TryValidateAuthorizationParameters(AuthorizationParameters, out var invalidRequestMessage))
         {
+            logger.LogWarning("Hosted sign-in POST rejected because authorization parameters were invalid.");
             return RenderInvalidAuthorizationRequest(invalidRequestMessage);
         }
 
@@ -85,6 +90,7 @@ public sealed class SignInModel(ISender sender) : PageModel
 
         if (openIddictRequest is null)
         {
+            logger.LogWarning("Hosted sign-in POST rejected because OpenIddict request was unavailable.");
             return RenderInvalidAuthorizationRequest("The authorization request could not be validated.");
         }
 
@@ -95,8 +101,11 @@ public sealed class SignInModel(ISender sender) : PageModel
 
         if (!result.Succeeded)
         {
+            logger.LogWarning("Hosted sign-in failed. FailureCount: {FailureCount}.", result.Errors.Count);
             return RedirectToPage("/Auth/SignIn", BuildInvalidCredentialsRedirectValues());
         }
+
+        logger.LogInformation("Hosted sign-in succeeded. UserId: {UserId}.", result.User!.UserId);
 
         var principal = OpenIddictClaimsPrincipalFactory.Create(result.User!, openIddictRequest);
 

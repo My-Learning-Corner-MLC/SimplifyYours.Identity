@@ -4,6 +4,7 @@ using IdentityService.Application.SignUp;
 using IdentityService.Contracts;
 using IdentityService.Contracts.SignUp;
 using IdentityService.Domain.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace IdentityService.UnitTests.SignUp;
 
@@ -55,7 +56,10 @@ public sealed class SignUpCommandHandlerTests
 
     private static SignUpCommandHandler CreateHandler(FakeUserAccountService accountService)
     {
-        return new SignUpCommandHandler(accountService, new FixedTimeProvider(FixedUtcNow));
+        return new SignUpCommandHandler(
+            accountService,
+            new FixedTimeProvider(FixedUtcNow),
+            NullLogger<SignUpCommandHandler>.Instance);
     }
 
     private sealed class FakeUserAccountService : IUserAccountService

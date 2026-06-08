@@ -1,5 +1,6 @@
 using IdentityService.Api.Endpoints;
 using IdentityService.Api.Middleware;
+using IdentityService.Api.Responses;
 using IdentityService.Application;
 using IdentityService.Infrastructure;
 
@@ -11,6 +12,8 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+app.UseFriendlyErrorResponses();
+app.UseRequestLogging();
 app.UseStaticFiles();
 app.UseHostedSignInRequestValidation();
 app.UseAuthentication();

@@ -6,12 +6,14 @@ using IdentityService.Contracts.SignUp;
 using IdentityService.Domain.Identity;
 using IdentityService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityService.Infrastructure.Identity;
 
 public sealed class IdentityUserAccountService(
     UserManager<ApplicationUser> userManager,
-    RoleManager<IdentityRole<Guid>> roleManager) : IUserAccountService
+    RoleManager<IdentityRole<Guid>> roleManager,
+    ILogger<IdentityUserAccountService> logger) : IUserAccountService
 {
     public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken)
     {
@@ -48,6 +50,9 @@ public sealed class IdentityUserAccountService(
 
         if (!createResult.Succeeded)
         {
+            logger.LogWarning(
+                "Identity user creation failed. ErrorCount: {ErrorCount}.",
+                createResult.Errors.Count());
             return CreateUserAccountResult.Failure(ToAuthErrors(createResult.Errors));
         }
 
@@ -55,8 +60,15 @@ public sealed class IdentityUserAccountService(
 
         if (!roleResult.Succeeded)
         {
+            logger.LogWarning(
+                "Identity role assignment failed. UserId: {UserId}. Role: {Role}. ErrorCount: {ErrorCount}.",
+                user.Id,
+                UserRoles.NormalUser,
+                roleResult.Errors.Count());
             return CreateUserAccountResult.Failure(ToAuthErrors(roleResult.Errors));
         }
+
+        logger.LogInformation("Identity user created. UserId: {UserId}. Role: {Role}.", user.Id, UserRoles.NormalUser);
 
         return CreateUserAccountResult.Success(new SignUpResponse(
             user.Id,
@@ -77,16 +89,19 @@ public sealed class IdentityUserAccountService(
 
         if (user is null)
         {
+            logger.LogWarning("Credentials validation failed. FailureReason: {FailureReason}.", SignInFailureReason.InvalidCredentials);
             return CredentialsValidationResult.Failure(SignInFailureReason.InvalidCredentials);
         }
 
         if (user.IsDisabled)
         {
+            logger.LogWarning("Credentials validation failed. UserId: {UserId}. FailureReason: {FailureReason}.", user.Id, SignInFailureReason.Disabled);
             return CredentialsValidationResult.Failure(SignInFailureReason.Disabled);
         }
 
         if (await userManager.IsLockedOutAsync(user))
         {
+            logger.LogWarning("Credentials validation failed. UserId: {UserId}. FailureReason: {FailureReason}.", user.Id, SignInFailureReason.LockedOut);
             return CredentialsValidationResult.Failure(SignInFailureReason.LockedOut);
         }
 
@@ -99,6 +114,7 @@ public sealed class IdentityUserAccountService(
                 await userManager.AccessFailedAsync(user);
             }
 
+            logger.LogWarning("Credentials validation failed. UserId: {UserId}. FailureReason: {FailureReason}.", user.Id, SignInFailureReason.InvalidCredentials);
             return CredentialsValidationResult.Failure(SignInFailureReason.InvalidCredentials);
         }
 
@@ -108,6 +124,8 @@ public sealed class IdentityUserAccountService(
         }
 
         var roles = await userManager.GetRolesAsync(user);
+
+        logger.LogInformation("Credentials validation succeeded. UserId: {UserId}. RoleCount: {RoleCount}.", user.Id, roles.Count);
 
         return CredentialsValidationResult.Success(new AuthenticatedUser(
             user.Id,
@@ -129,8 +147,14 @@ public sealed class IdentityUserAccountService(
 
         if (!result.Succeeded)
         {
+            logger.LogError(
+                "Required identity role creation failed. Role: {Role}. ErrorCount: {ErrorCount}.",
+                roleName,
+                result.Errors.Count());
             throw new InvalidOperationException($"Unable to create required role '{roleName}'.");
         }
+
+        logger.LogInformation("Required identity role created. Role: {Role}.", roleName);
     }
 
     private static IReadOnlyCollection<AuthError> ToAuthErrors(IEnumerable<IdentityError> errors)

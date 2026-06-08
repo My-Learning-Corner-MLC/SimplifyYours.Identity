@@ -2,6 +2,7 @@ using IdentityService.Application;
 using IdentityService.Application.SignIn;
 using IdentityService.Application.SignUp;
 using IdentityService.Domain.Identity;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace IdentityService.UnitTests.SignIn;
 
@@ -17,7 +18,9 @@ public sealed class SignInCommandHandlerTests
             new[] { UserRoles.NormalUser });
         var accountService = new FakeUserAccountService(
             CredentialsValidationResult.Success(authenticatedUser));
-        var handler = new SignInCommandHandler(accountService);
+        var handler = new SignInCommandHandler(
+            accountService,
+            NullLogger<SignInCommandHandler>.Instance);
 
         var result = await handler.Handle(
             new SignInCommand(" avery@example.com ", "Password1!"),
@@ -33,7 +36,9 @@ public sealed class SignInCommandHandlerTests
     {
         var accountService = new FakeUserAccountService(
             CredentialsValidationResult.Failure(SignInFailureReason.InvalidCredentials));
-        var handler = new SignInCommandHandler(accountService);
+        var handler = new SignInCommandHandler(
+            accountService,
+            NullLogger<SignInCommandHandler>.Instance);
 
         var result = await handler.Handle(
             new SignInCommand("avery@example.com", "wrong-password"),

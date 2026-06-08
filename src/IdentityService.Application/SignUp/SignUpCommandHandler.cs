@@ -1,12 +1,14 @@
 using IdentityService.Application;
 using IdentityService.Contracts;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityService.Application.SignUp;
 
 public sealed class SignUpCommandHandler(
     IUserAccountService userAccountService,
-    TimeProvider timeProvider) : IRequestHandler<SignUpCommand, SignUpResult>
+    TimeProvider timeProvider,
+    ILogger<SignUpCommandHandler> logger) : IRequestHandler<SignUpCommand, SignUpResult>
 {
     public async Task<SignUpResult> Handle(SignUpCommand request, CancellationToken cancellationToken)
     {
@@ -15,6 +17,7 @@ public sealed class SignUpCommandHandler(
 
         if (emailExists)
         {
+            logger.LogWarning("Sign-up rejected because email already exists.");
             return SignUpResult.Failure(new[]
             {
                 new AuthError("Email", "An account with this email address already exists.")
@@ -28,8 +31,16 @@ public sealed class SignUpCommandHandler(
             timeProvider.GetUtcNow(),
             cancellationToken);
 
-        return createResult.Succeeded
-            ? SignUpResult.Success(createResult.User!)
-            : SignUpResult.Failure(createResult.Errors);
+        if (!createResult.Succeeded)
+        {
+            logger.LogWarning(
+                "Sign-up user creation failed. ErrorCount: {ErrorCount}.",
+                createResult.Errors.Count);
+            return SignUpResult.Failure(createResult.Errors);
+        }
+
+        logger.LogInformation("Sign-up user account created. UserId: {UserId}.", createResult.User!.UserId);
+
+        return SignUpResult.Success(createResult.User);
     }
 }

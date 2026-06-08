@@ -1,19 +1,22 @@
 using FluentValidation;
+using IdentityService.Api.Responses;
 using IdentityService.Application.SignUp;
 using IdentityService.Contracts;
 using IdentityService.Contracts.SignUp;
 using MediatR;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace IdentityService.Api.Endpoints.SignUp;
 
 internal static class SignUpEndpoints
 {
-    public static async Task<Results<Created<SignUpResponse>, BadRequest<AuthErrorResponse>>> SignUpAsync(
+    public static async Task<IResult> SignUpAsync(
         SignUpRequest request,
+        HttpContext httpContext,
         ISender sender,
+        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
+        var logger = loggerFactory.CreateLogger("IdentityService.SignUp");
         SignUpResult result;
 
         try
@@ -22,13 +25,21 @@ internal static class SignUpEndpoints
         }
         catch (ValidationException exception)
         {
-            return TypedResults.BadRequest(new AuthErrorResponse(ToAuthErrors(exception)));
+            logger.LogWarning(
+                "Sign-up request failed validation. ErrorCount: {ErrorCount}.",
+                exception.Errors.Count());
+            return ApiErrorResults.ValidationProblem(ToAuthErrors(exception), httpContext);
         }
 
         if (!result.Succeeded)
         {
-            return TypedResults.BadRequest(new AuthErrorResponse(result.Errors));
+            logger.LogWarning(
+                "Sign-up request was rejected. ErrorCount: {ErrorCount}.",
+                result.Errors.Count);
+            return ApiErrorResults.ValidationProblem(result.Errors, httpContext);
         }
+
+        logger.LogInformation("User signed up. UserId: {UserId}.", result.User!.UserId);
 
         return TypedResults.Created($"/users/{result.User!.UserId}", result.User);
     }
