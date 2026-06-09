@@ -2,7 +2,9 @@ using IdentityService.Api.Auth;
 
 namespace IdentityService.Api.Middleware;
 
-internal sealed class HostedSignInRequestValidationMiddleware(RequestDelegate next)
+internal sealed class HostedSignInRequestValidationMiddleware(
+    RequestDelegate next,
+    ILogger<HostedSignInRequestValidationMiddleware> logger)
 {
     public const string ErrorMessageItemKey = "HostedSignInRequestValidation.ErrorMessage";
 
@@ -24,6 +26,7 @@ internal sealed class HostedSignInRequestValidationMiddleware(RequestDelegate ne
             context.Request.Path.Equals(HostedSignInConstants.SignInPath, StringComparison.OrdinalIgnoreCase) &&
             !TryValidate(context.Request.Query, out var message))
         {
+            logger.LogWarning("Hosted sign-in request validation failed before page handling.");
             context.Items[ErrorMessageItemKey] = message;
             context.Request.Path = "/auth/sign-in/request-error";
         }

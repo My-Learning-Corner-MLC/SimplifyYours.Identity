@@ -1,11 +1,13 @@
 using IdentityService.Application;
 using IdentityService.Contracts;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace IdentityService.Application.SignIn;
 
 public sealed class SignInCommandHandler(
-    IUserAccountService userAccountService) : IRequestHandler<SignInCommand, SignInResult>
+    IUserAccountService userAccountService,
+    ILogger<SignInCommandHandler> logger) : IRequestHandler<SignInCommand, SignInResult>
 {
     public async Task<SignInResult> Handle(SignInCommand request, CancellationToken cancellationToken)
     {
@@ -16,6 +18,9 @@ public sealed class SignInCommandHandler(
 
         if (!credentialsResult.Succeeded)
         {
+            logger.LogWarning(
+                "Sign-in rejected. FailureReason: {FailureReason}.",
+                credentialsResult.FailureReason?.ToString() ?? "Unknown");
             return SignInResult.Failure(new[]
             {
                 new AuthError(
@@ -23,6 +28,8 @@ public sealed class SignInCommandHandler(
                     "The email/password combination is invalid.")
             });
         }
+
+        logger.LogInformation("Sign-in credentials accepted. UserId: {UserId}.", credentialsResult.User!.UserId);
 
         return SignInResult.Success(credentialsResult.User!);
     }
