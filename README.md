@@ -53,6 +53,37 @@ The service requires `ConnectionStrings:IdentityServiceDb` at runtime. Keep real
 connection strings out of source control and provide them through environment
 variables, user secrets, or local-only configuration.
 
+## Local Observability
+
+Start shared infrastructure before running the API:
+
+```bash
+docker compose --env-file ../../infra/shared-infrastructure/infrastructure/.env -f ../../infra/shared-infrastructure/infrastructure/docker-compose.yml up -d --remove-orphans
+```
+
+The API launch profiles export logs, traces, and metrics to the local Aspire
+Dashboard:
+
+```text
+OTEL_SERVICE_NAME=identity-service
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+OTEL_EXPORTER_OTLP_HEADERS=x-otlp-api-key=<SIMPLIFYYOURS_ASPIRE_OTLP_API_KEY>
+OTEL_RESOURCE_ATTRIBUTES=service.namespace=SimplifyYours,deployment.environment=local
+```
+
+Set `OTEL_EXPORTER_OTLP_HEADERS` in your shell before running the service. The
+value must match `SIMPLIFYYOURS_ASPIRE_OTLP_API_KEY` from the shared
+infrastructure `infrastructure/.env` file.
+
+Open `http://localhost:18888` and use the token from
+`docker container logs simplify-yours-aspire-dashboard`.
+
+Do not log request bodies, response bodies, passwords, tokens, authorization
+codes, refresh tokens, payment data, customer data, or unnecessary personal
+data. Prefer safe context such as operation name, event ID, correlation ID,
+causation ID, status, elapsed time, and attempt count.
+
 ## Authorization Code + PKCE Flow
 
 `/auth/sign-in` is the authorization endpoint and `/auth/token` is the token
