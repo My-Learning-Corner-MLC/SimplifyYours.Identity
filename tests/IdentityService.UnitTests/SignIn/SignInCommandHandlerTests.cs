@@ -15,7 +15,9 @@ public sealed class SignInCommandHandlerTests
             Guid.NewGuid(),
             "avery@example.com",
             "Avery Nguyen",
-            new[] { UserRoles.NormalUser });
+            Guid.NewGuid(),
+            new[] { UserRoles.NormalUser },
+            Permissions.All);
         var accountService = new FakeUserAccountService(
             CredentialsValidationResult.Success(authenticatedUser));
         var handler = new SignInCommandHandler(

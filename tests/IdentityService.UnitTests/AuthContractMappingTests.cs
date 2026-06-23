@@ -39,11 +39,14 @@ public sealed class AuthContractMappingTests
             "Active");
         var error = new AuthError("Email", "Email is already registered.");
         var errorResponse = new AuthErrorResponse(new[] { error });
+        var tenantId = Guid.NewGuid();
         var authenticatedUser = new AuthenticatedUser(
             userId,
             "avery@example.com",
             "Avery Nguyen",
-            new[] { UserRoles.NormalUser });
+            tenantId,
+            new[] { UserRoles.NormalUser },
+            Permissions.All);
 
         Assert.Equal(userId, signUpResponse.UserId);
         Assert.Equal("avery@example.com", signUpResponse.Email);

@@ -11,4 +11,6 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset? TermsAcceptedAt { get; set; }
+
+    public Guid TenantId { get; set; }
 }

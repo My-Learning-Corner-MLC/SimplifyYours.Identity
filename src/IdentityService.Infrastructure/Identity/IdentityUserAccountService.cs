@@ -6,6 +6,7 @@ using IdentityService.Contracts.SignUp;
 using IdentityService.Domain.Identity;
 using IdentityService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace IdentityService.Infrastructure.Identity;
@@ -13,6 +14,8 @@ namespace IdentityService.Infrastructure.Identity;
 public sealed class IdentityUserAccountService(
     UserManager<ApplicationUser> userManager,
     RoleManager<IdentityRole<Guid>> roleManager,
+    IdentityServiceDbContext dbContext,
+    TimeProvider timeProvider,
     ILogger<IdentityUserAccountService> logger) : IUserAccountService
 {
     public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken)
@@ -35,6 +38,17 @@ public sealed class IdentityUserAccountService(
 
         await EnsureRoleExistsAsync(UserRoles.NormalUser, cancellationToken);
 
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+
+        var tenant = new Tenant
+        {
+            Id = Guid.NewGuid(),
+            CreatedAt = timeProvider.GetUtcNow(),
+        };
+
+        dbContext.Tenants.Add(tenant);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
         var user = new ApplicationUser
         {
             Id = Guid.NewGuid(),
@@ -43,7 +57,8 @@ public sealed class IdentityUserAccountService(
             Email = email,
             EmailConfirmed = false,
             CreatedAt = termsAcceptedAt,
-            TermsAcceptedAt = termsAcceptedAt
+            TermsAcceptedAt = termsAcceptedAt,
+            TenantId = tenant.Id,
         };
 
         var createResult = await userManager.CreateAsync(user, password);
@@ -53,6 +68,7 @@ public sealed class IdentityUserAccountService(
             logger.LogWarning(
                 "Identity user creation failed. ErrorCount: {ErrorCount}.",
                 createResult.Errors.Count());
+            await transaction.RollbackAsync(cancellationToken);
             return CreateUserAccountResult.Failure(ToAuthErrors(createResult.Errors));
         }
 
@@ -65,10 +81,28 @@ public sealed class IdentityUserAccountService(
                 user.Id,
                 UserRoles.NormalUser,
                 roleResult.Errors.Count());
+            await transaction.RollbackAsync(cancellationToken);
             return CreateUserAccountResult.Failure(ToAuthErrors(roleResult.Errors));
         }
 
-        logger.LogInformation("Identity user created. UserId: {UserId}. Role: {Role}.", user.Id, UserRoles.NormalUser);
+        foreach (var permission in Permissions.All)
+        {
+            dbContext.UserPermissions.Add(new UserPermission
+            {
+                UserId = user.Id,
+                Permission = permission,
+            });
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Identity user created. UserId: {UserId}. TenantId: {TenantId}. Role: {Role}. PermissionCount: {PermissionCount}.",
+            user.Id,
+            user.TenantId,
+            UserRoles.NormalUser,
+            Permissions.All.Count);
 
         return CreateUserAccountResult.Success(new SignUpResponse(
             user.Id,
@@ -125,13 +159,26 @@ public sealed class IdentityUserAccountService(
 
         var roles = await userManager.GetRolesAsync(user);
 
-        logger.LogInformation("Credentials validation succeeded. UserId: {UserId}. RoleCount: {RoleCount}.", user.Id, roles.Count);
+        var permissions = await dbContext.UserPermissions
+            .AsNoTracking()
+            .Where(permission => permission.UserId == user.Id)
+            .Select(permission => permission.Permission)
+            .ToArrayAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Credentials validation succeeded. UserId: {UserId}. TenantId: {TenantId}. RoleCount: {RoleCount}. PermissionCount: {PermissionCount}.",
+            user.Id,
+            user.TenantId,
+            roles.Count,
+            permissions.Length);
 
         return CredentialsValidationResult.Success(new AuthenticatedUser(
             user.Id,
             user.Email!,
             user.FullName,
-            roles.ToArray()));
+            user.TenantId,
+            roles.ToArray(),
+            permissions));
     }
 
     private async Task EnsureRoleExistsAsync(string roleName, CancellationToken cancellationToken)
