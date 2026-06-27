@@ -4,4 +4,6 @@ public sealed record AuthenticatedUser(
     Guid UserId,
     string Email,
     string FullName,
-    IReadOnlyCollection<string> Roles);
+    Guid TenantId,
+    IReadOnlyCollection<string> Roles,
+    IReadOnlyCollection<string> Permissions);

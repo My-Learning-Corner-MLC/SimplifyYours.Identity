@@ -53,6 +53,50 @@ The service requires `ConnectionStrings:IdentityServiceDb` at runtime. Keep real
 connection strings out of source control and provide them through environment
 variables, user secrets, or local-only configuration.
 
+Token issuing also requires:
+
+- `Auth:Issuer`: stable Identity Service issuer URL, for example `https://localhost:15200/`.
+- `Auth:AccessTokenEncryptionKeyBase64`: optional base64-encoded shared access-token encryption key.
+
+When `Auth:AccessTokenEncryptionKeyBase64` is set, resource services must use
+the same value for OpenIddict validation. When it is empty, Identity falls back
+to development encryption credentials, which are only suitable for local
+experimentation and cannot be used as a production resource-service validation
+contract.
+
+## Tenant And Permission Model
+
+Identity owns the tenant boundary for all resource services.
+
+- Every user belongs to exactly one tenant. The tenant is created during
+  self-serve sign-up and the user is the sole member with the full permission
+  catalog. There is no shared/multi-user tenant flow yet.
+- Permissions are capability strings (not roles). The fixed catalog lives in
+  `IdentityService.Domain.Identity.Permissions`:
+  - `events.create`
+  - `events.view`
+  - `events.update`
+  - `guests.add`
+  - `tenant.manage_users`
+- The `TenantAdmin` role is assigned to the user created during self-serve sign-up.
+  Resource services authorize on permissions, not roles.
+
+Sign-up creates the tenant, user, role assignment, and permission rows in a
+single EF Core transaction so a partial signup cannot leak orphaned tenants or
+permissionless users.
+
+### Token Claims
+
+Access tokens issued by `/auth/token` carry:
+
+- `sub`: user id (Guid string)
+- `email`, `name`: user identity
+- `tenant_id`: single Guid string for the user's tenant
+- `role`: one claim per role (currently always `TenantAdmin`)
+- `permissions`: one claim per permission. Resource services should treat
+  `permissions` as a set and authorize each request against the relevant
+  capability string.
+
 ## Local Observability
 
 Start shared infrastructure before running the API:

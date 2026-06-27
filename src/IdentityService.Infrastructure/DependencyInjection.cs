@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 
 namespace IdentityService.Infrastructure;
@@ -53,6 +54,7 @@ public static class DependencyInjection
             {
                 options.SetAuthorizationEndpointUris("/auth/sign-in");
                 options.SetTokenEndpointUris("/auth/token");
+                options.SetIssuer(GetRequiredIssuer(configuration));
                 options.AllowAuthorizationCodeFlow()
                     .RequireProofKeyForCodeExchange();
                 options.AllowRefreshTokenFlow();
@@ -62,8 +64,7 @@ public static class DependencyInjection
                     OpenIddictConstants.Scopes.Profile,
                     OpenIddictConstants.Scopes.Roles,
                     OpenIddictConstants.Scopes.OfflineAccess);
-                options.AddDevelopmentEncryptionCertificate()
-                    .AddDevelopmentSigningCertificate();
+                ConfigureTokenCredentials(options, configuration);
                 options.UseAspNetCore()
                     .EnableAuthorizationEndpointPassthrough();
             });
@@ -73,5 +74,35 @@ public static class DependencyInjection
         services.AddScoped<IUserAccountService, IdentityUserAccountService>();
 
         return services;
+    }
+
+    private static Uri GetRequiredIssuer(IConfiguration configuration)
+    {
+        var issuer = configuration["Auth:Issuer"];
+
+        if (string.IsNullOrWhiteSpace(issuer))
+        {
+            throw new InvalidOperationException("Configuration value 'Auth:Issuer' is required.");
+        }
+
+        return new Uri(issuer, UriKind.Absolute);
+    }
+
+    private static void ConfigureTokenCredentials(
+        OpenIddictServerBuilder options,
+        IConfiguration configuration)
+    {
+        var encryptionKey = configuration["Auth:AccessTokenEncryptionKeyBase64"];
+
+        if (!string.IsNullOrWhiteSpace(encryptionKey))
+        {
+            options.AddEncryptionKey(new SymmetricSecurityKey(Convert.FromBase64String(encryptionKey)));
+        }
+        else
+        {
+            options.AddDevelopmentEncryptionCertificate();
+        }
+
+        options.AddDevelopmentSigningCertificate();
     }
 }

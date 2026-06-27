@@ -14,7 +14,9 @@ public sealed class ValidationBehaviorTests
             Guid.NewGuid(),
             "avery@example.com",
             "Avery Nguyen",
-            new[] { UserRoles.NormalUser });
+            Guid.NewGuid(),
+            new[] { UserRoles.TenantAdmin },
+            Permissions.All);
         var expectedResult = SignInResult.Success(authenticatedUser);
         var behavior = new ValidationBehavior<SignInCommand, SignInResult>(
             Array.Empty<IValidator<SignInCommand>>());
@@ -40,7 +42,9 @@ public sealed class ValidationBehaviorTests
             Guid.NewGuid(),
             "avery@example.com",
             "Avery Nguyen",
-            new[] { UserRoles.NormalUser });
+            Guid.NewGuid(),
+            new[] { UserRoles.TenantAdmin },
+            Permissions.All);
         var expectedResult = SignInResult.Success(authenticatedUser);
         var behavior = new ValidationBehavior<SignInCommand, SignInResult>(
             new[] { new SignInCommandValidator() });

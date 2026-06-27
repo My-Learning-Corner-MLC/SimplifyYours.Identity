@@ -7,7 +7,7 @@ public interface IUserAccountService
 {
     Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken);
 
-    Task<CreateUserAccountResult> CreateNormalUserAsync(
+    Task<CreateUserAccountResult> CreateTenantAdminAsync(
         string fullName,
         string email,
         string password,
