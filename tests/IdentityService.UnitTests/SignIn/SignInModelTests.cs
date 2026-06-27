@@ -91,6 +91,28 @@ public sealed class SignInModelTests
             Times.Never);
     }
 
+    [Fact]
+    public async Task OnPostAsync_WhenSignInFails_PreservesEveryOpenIddictAuthorizationParameter()
+    {
+        var harness = CreateHarness(signInResult: FailedSignIn());
+
+        var result = await harness.Model.OnPostAsync(CancellationToken.None);
+
+        var redirect = Assert.IsType<RedirectToPageResult>(result);
+        var values = redirect.RouteValues!;
+        Assert.Equal("invalid_credentials", values["error"]);
+        foreach (var (key, expected) in BuildValidAuthorizationForm())
+        {
+            if (key is "email" or "password" or "remember_me")
+            {
+                continue;
+            }
+
+            Assert.True(values.ContainsKey(key), $"Authorization parameter '{key}' was dropped from the invalid-credentials redirect.");
+            Assert.Equal(expected.ToString(), values[key]);
+        }
+    }
+
     private static IdentityService.Application.SignIn.SignInResult SuccessfulSignIn() =>
         IdentityService.Application.SignIn.SignInResult.Success(new AuthenticatedUser(
             Guid.NewGuid(),
