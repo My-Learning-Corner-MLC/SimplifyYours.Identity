@@ -423,6 +423,11 @@ body {
     caret-color: var(--color-plum);
 }
 
+.auth-field__input[type="password"]::-ms-reveal,
+.auth-field__input[type="password"]::-ms-clear {
+    display: none;
+}
+
 .auth-field__input::placeholder {
     color: var(--color-mute);
 }
