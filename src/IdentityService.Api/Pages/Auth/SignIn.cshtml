@@ -154,11 +154,29 @@
                         <a class="auth-form__forgot" href="#" aria-disabled="true">Forgot password?</a>
                     </div>
 
-                    <button type="submit" class="auth-button">
+                    <button type="submit" class="auth-button" data-auth-submit>
+                        <span class="auth-button__spinner" aria-hidden="true"></span>
                         <span class="auth-button__label">Sign in</span>
                         <span class="auth-button__arrow" aria-hidden="true">&rarr;</span>
                     </button>
+                    <p class="auth-form__helper" aria-live="polite">just a moment</p>
                 </form>
+                <script>
+                    (function () {
+                        var form = document.getElementById('auth-sign-in-form');
+                        if (!form || form.dataset.loadingBound === 'true') { return; }
+                        form.dataset.loadingBound = 'true';
+                        form.addEventListener('submit', function () {
+                            form.classList.add('auth-form--loading');
+                            var submit = form.querySelector('[data-auth-submit]');
+                            if (submit) {
+                                submit.disabled = true;
+                                var label = submit.querySelector('.auth-button__label');
+                                if (label) { label.textContent = 'Signing you in\u2026'; }
+                            }
+                        });
+                    })();
+                </script>
 
                 <div class="auth-card__form-spacer"></div>
 

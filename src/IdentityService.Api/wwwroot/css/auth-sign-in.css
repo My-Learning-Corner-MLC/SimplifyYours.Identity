@@ -549,11 +549,74 @@ body {
     background: var(--color-plum-deep);
 }
 
+.auth-button[disabled] {
+    cursor: progress;
+    background: var(--color-plum);
+    opacity: 0.95;
+}
+
 .auth-button__arrow {
     font-family: var(--font-serif);
     font-style: italic;
     font-size: 18px;
     opacity: 0.9;
+}
+
+.auth-button__spinner {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 252, 245, 0.3);
+    border-top-color: var(--color-gold);
+    animation: auth-spin 1s linear infinite;
+}
+
+.auth-form--loading .auth-button__spinner {
+    display: inline-block;
+}
+
+.auth-form--loading .auth-button__arrow {
+    display: none;
+}
+
+.auth-form__helper {
+    margin: 10px 0 0 0;
+    text-align: center;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--color-mute);
+    visibility: hidden;
+}
+
+.auth-form--loading .auth-form__helper {
+    visibility: visible;
+}
+
+.auth-form--loading .auth-field__control {
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.auth-form--loading .auth-field__input {
+    pointer-events: none;
+}
+
+@keyframes auth-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-button__spinner {
+        animation: none;
+    }
+    .auth-field__control,
+    .auth-field__icon,
+    .auth-button,
+    .auth-remember-me__box {
+        transition: none;
+    }
 }
 
 .auth-card__form-spacer {
