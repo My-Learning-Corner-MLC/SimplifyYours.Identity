@@ -18,7 +18,7 @@ public sealed class SignUpEndpointsTests
     [Fact]
     public async Task SignUpAsync_ReturnsCreated_WhenHandlerSucceeds()
     {
-        var response = new SignUpResponse(Guid.NewGuid(), "a@b.c", "Avery", UserRoles.NormalUser, "Active");
+        var response = new SignUpResponse(Guid.NewGuid(), "a@b.c", "Avery", UserRoles.TenantAdmin, "Active");
         var sender = new Mock<ISender>();
         sender.Setup(s => s.Send(It.IsAny<SignUpCommand>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync(SignUpResult.Success(response));
