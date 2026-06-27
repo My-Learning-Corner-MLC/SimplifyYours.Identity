@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using IdentityService.Application.SignIn;
-using IdentityService.Contracts;
 using OpenIddict.Abstractions;
 using OpenIddict.Server.AspNetCore;
 using static OpenIddict.Abstractions.OpenIddictConstants;
@@ -10,6 +9,8 @@ namespace IdentityService.Api.Auth;
 internal static class OpenIddictClaimsPrincipalFactory
 {
     private const string ResourceName = "simplify-yours-api";
+    private const string TenantIdClaim = "tenant_id";
+    private const string PermissionsClaim = "permissions";
 
     public static ClaimsPrincipal Create(
         AuthenticatedUser user,
@@ -23,10 +24,16 @@ internal static class OpenIddictClaimsPrincipalFactory
         identity.SetClaim(Claims.Subject, user.UserId.ToString());
         identity.SetClaim(Claims.Email, user.Email);
         identity.SetClaim(Claims.Name, user.FullName);
+        identity.SetClaim(TenantIdClaim, user.TenantId.ToString());
 
         foreach (var role in user.Roles)
         {
             identity.AddClaim(Claims.Role, role);
+        }
+
+        foreach (var permission in user.Permissions.Distinct(StringComparer.Ordinal))
+        {
+            identity.AddClaim(PermissionsClaim, permission);
         }
 
         var principal = new ClaimsPrincipal(identity);

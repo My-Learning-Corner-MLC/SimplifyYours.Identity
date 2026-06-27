@@ -19,7 +19,9 @@
         "OTEL_SERVICE_NAME": "identity-service",
         "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
         "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
-        "OTEL_RESOURCE_ATTRIBUTES": "service.namespace=SimplifyYours,deployment.environment=local"
+        "OTEL_RESOURCE_ATTRIBUTES": "service.namespace=SimplifyYours,deployment.environment=local",
+        "SIMPLIFYYOURS_ASPIRE_OTLP_API_KEY": "s!mpl!fy0urs",
+        "OTEL_EXPORTER_OTLP_HEADERS": "x-otlp-api-key=$SIMPLIFYYOURS_ASPIRE_OTLP_API_KEY"
       }
     },
     "https": {

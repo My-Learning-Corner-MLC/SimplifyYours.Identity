@@ -24,7 +24,7 @@ public sealed class SignUpCommandHandler(
             });
         }
 
-        var createResult = await userAccountService.CreateNormalUserAsync(
+        var createResult = await userAccountService.CreateTenantAdminAsync(
             request.FullName!.Trim(),
             normalizedEmail,
             request.Password!,

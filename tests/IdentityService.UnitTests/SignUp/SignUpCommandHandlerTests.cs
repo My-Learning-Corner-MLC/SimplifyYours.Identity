@@ -13,7 +13,7 @@ public sealed class SignUpCommandHandlerTests
     private static readonly DateTimeOffset FixedUtcNow = new(2026, 5, 17, 10, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public async Task Handle_CreatesNormalUser_WhenCommandIsValid()
+    public async Task Handle_CreatesTenantAdminUser_WhenCommandIsValid()
     {
         var accountService = new FakeUserAccountService();
         var handler = CreateHandler(accountService);
@@ -30,7 +30,7 @@ public sealed class SignUpCommandHandlerTests
         Assert.NotNull(result.User);
         Assert.Equal("avery@example.com", accountService.CreatedEmail);
         Assert.Equal("Avery Nguyen", accountService.CreatedFullName);
-        Assert.Equal(UserRoles.NormalUser, result.User.Role);
+        Assert.Equal(UserRoles.TenantAdmin, result.User.Role);
         Assert.Equal(FixedUtcNow, accountService.TermsAcceptedAt);
     }
 
@@ -79,7 +79,7 @@ public sealed class SignUpCommandHandlerTests
             return Task.FromResult(EmailExists);
         }
 
-        public Task<CreateUserAccountResult> CreateNormalUserAsync(
+        public Task<CreateUserAccountResult> CreateTenantAdminAsync(
             string fullName,
             string email,
             string password,
@@ -95,7 +95,7 @@ public sealed class SignUpCommandHandlerTests
                 Guid.NewGuid(),
                 email,
                 fullName,
-                UserRoles.NormalUser,
+                UserRoles.TenantAdmin,
                 "Active")));
         }
 

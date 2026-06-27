@@ -15,7 +15,9 @@ public sealed class SignInCommandHandlerTests
             Guid.NewGuid(),
             "avery@example.com",
             "Avery Nguyen",
-            new[] { UserRoles.NormalUser });
+            Guid.NewGuid(),
+            new[] { UserRoles.TenantAdmin },
+            Permissions.All);
         var accountService = new FakeUserAccountService(
             CredentialsValidationResult.Success(authenticatedUser));
         var handler = new SignInCommandHandler(
@@ -59,7 +61,7 @@ public sealed class SignInCommandHandlerTests
             throw new NotSupportedException();
         }
 
-        public Task<CreateUserAccountResult> CreateNormalUserAsync(
+        public Task<CreateUserAccountResult> CreateTenantAdminAsync(
             string fullName,
             string email,
             string password,
