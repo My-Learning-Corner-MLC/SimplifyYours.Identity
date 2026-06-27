@@ -350,17 +350,29 @@ body {
     margin-top: 8px;
     padding: 12px 18px;
     background: var(--color-cream-shade);
-    border: 1px solid var(--color-cream-border);
+    border: 1.5px solid var(--color-cream-border);
     border-radius: var(--radius-field);
     display: flex;
     align-items: center;
     gap: 12px;
     transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+    caret-color: var(--color-plum);
+}
+
+.auth-field__control:focus-within {
+    background: var(--color-cream);
+    border-color: var(--color-plum);
+    box-shadow: var(--shadow-focus-plum);
+}
+
+.auth-field__control:focus-within .auth-field__icon {
+    color: var(--color-plum);
 }
 
 .auth-field__icon {
     color: var(--color-mute);
     flex: none;
+    transition: color 120ms ease;
 }
 
 .auth-field__input {
@@ -373,6 +385,7 @@ body {
     color: var(--color-ink);
     padding: 0;
     outline: none;
+    caret-color: var(--color-plum);
 }
 
 .auth-field__input::placeholder {
@@ -388,6 +401,30 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border-radius: 4px;
+}
+
+.auth-field__toggle:focus-visible {
+    outline: 2px solid var(--color-plum);
+    outline-offset: 2px;
+}
+
+.auth-remember-me__input:focus-visible + .auth-remember-me__box {
+    outline: 2px solid var(--color-plum);
+    outline-offset: 2px;
+}
+
+.auth-form__forgot:focus-visible,
+.auth-card__form-switch-link:focus-visible,
+.auth-card__fineprint a:focus-visible {
+    outline: 2px solid var(--color-plum);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.auth-button:focus-visible {
+    outline: 3px solid var(--color-gold);
+    outline-offset: 3px;
 }
 
 .auth-form__row {
