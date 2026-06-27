@@ -273,9 +273,13 @@ public sealed class IdentityUserAccountServiceTests
         var roleManager = new Mock<RoleManager<IdentityRole<Guid>>>(
             roleStore.Object, null!, null!, null!, null!);
 
+        var dbContext = new Mock<IdentityServiceDbContext>();
+
         var service = new IdentityUserAccountService(
             userManager.Object,
             roleManager.Object,
+            dbContext.Object,
+            TimeProvider.System,
             NullLogger<IdentityUserAccountService>.Instance);
 
         return (service, userManager, roleManager);

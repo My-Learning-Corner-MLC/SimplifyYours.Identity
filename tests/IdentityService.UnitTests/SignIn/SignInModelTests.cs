@@ -4,6 +4,7 @@ using IdentityService.Application;
 using IdentityService.Application.SignIn;
 using IdentityService.Contracts;
 using IdentityService.Domain.Identity;
+using IdentityService.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -118,7 +119,9 @@ public sealed class SignInModelTests
             Guid.NewGuid(),
             "avery@example.com",
             "Avery Nguyen",
-            new[] { UserRoles.TenantAdmin }));
+            Guid.NewGuid(),
+            new[] { UserRoles.TenantAdmin },
+            new[] { Permissions.EventsCreate }));
 
     private static IdentityService.Application.SignIn.SignInResult FailedSignIn() =>
         IdentityService.Application.SignIn.SignInResult.Failure(new[]
