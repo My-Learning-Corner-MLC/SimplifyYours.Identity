@@ -149,7 +149,8 @@
                             <input class="auth-remember-me__input"
                                    type="checkbox"
                                    name="@HostedSignInConstants.RememberMeFieldName"
-                                   value="true" />
+                                   value="true"
+                                   @(Model.RememberMe ? "checked" : null) />
                             <span class="auth-remember-me__box" aria-hidden="true"></span>
                             <span class="auth-remember-me__label">Remember me</span>
                         </label>

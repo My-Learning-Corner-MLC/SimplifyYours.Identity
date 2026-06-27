@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\IdentityService.Api\IdentityService.Api.csproj" />
     <ProjectReference Include="..\..\src\IdentityService.Application\IdentityService.Application.csproj" />
     <ProjectReference Include="..\..\src\IdentityService.Contracts\IdentityService.Contracts.csproj" />
     <ProjectReference Include="..\..\src\IdentityService.Domain\IdentityService.Domain.csproj" />
