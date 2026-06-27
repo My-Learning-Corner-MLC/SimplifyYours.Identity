@@ -2,5 +2,5 @@ namespace IdentityService.Domain.Identity;
 
 public static class UserRoles
 {
-    public const string NormalUser = "NormalUser";
+    public const string TenantAdmin = "TenantAdmin";
 }

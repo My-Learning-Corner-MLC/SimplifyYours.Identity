@@ -35,7 +35,7 @@ public sealed class AuthContractMappingTests
             userId,
             "avery@example.com",
             "Avery Nguyen",
-            UserRoles.NormalUser,
+            UserRoles.TenantAdmin,
             "Active");
         var error = new AuthError("Email", "Email is already registered.");
         var errorResponse = new AuthErrorResponse(new[] { error });
@@ -45,7 +45,7 @@ public sealed class AuthContractMappingTests
             "avery@example.com",
             "Avery Nguyen",
             tenantId,
-            new[] { UserRoles.NormalUser },
+            new[] { UserRoles.TenantAdmin },
             Permissions.All);
 
         Assert.Equal(userId, signUpResponse.UserId);

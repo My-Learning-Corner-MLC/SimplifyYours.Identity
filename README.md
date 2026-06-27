@@ -78,7 +78,7 @@ Identity owns the tenant boundary for all resource services.
   - `events.update`
   - `guests.add`
   - `tenant.manage_users`
-- The `NormalUser` role is the only role used for application authorization.
+- The `TenantAdmin` role is assigned to the user created during self-serve sign-up.
   Resource services authorize on permissions, not roles.
 
 Sign-up creates the tenant, user, role assignment, and permission rows in a
@@ -92,7 +92,7 @@ Access tokens issued by `/auth/token` carry:
 - `sub`: user id (Guid string)
 - `email`, `name`: user identity
 - `tenant_id`: single Guid string for the user's tenant
-- `role`: one claim per role (currently always `NormalUser`)
+- `role`: one claim per role (currently always `TenantAdmin`)
 - `permissions`: one claim per permission. Resource services should treat
   `permissions` as a set and authorize each request against the relevant
   capability string.

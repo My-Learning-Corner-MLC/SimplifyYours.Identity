@@ -27,7 +27,7 @@ public sealed class IdentityUserAccountService(
         return user is not null;
     }
 
-    public async Task<CreateUserAccountResult> CreateNormalUserAsync(
+    public async Task<CreateUserAccountResult> CreateTenantAdminAsync(
         string fullName,
         string email,
         string password,
@@ -36,7 +36,7 @@ public sealed class IdentityUserAccountService(
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        await EnsureRoleExistsAsync(UserRoles.NormalUser, cancellationToken);
+        await EnsureRoleExistsAsync(UserRoles.TenantAdmin, cancellationToken);
 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
@@ -72,14 +72,14 @@ public sealed class IdentityUserAccountService(
             return CreateUserAccountResult.Failure(ToAuthErrors(createResult.Errors));
         }
 
-        var roleResult = await userManager.AddToRoleAsync(user, UserRoles.NormalUser);
+        var roleResult = await userManager.AddToRoleAsync(user, UserRoles.TenantAdmin);
 
         if (!roleResult.Succeeded)
         {
             logger.LogWarning(
                 "Identity role assignment failed. UserId: {UserId}. Role: {Role}. ErrorCount: {ErrorCount}.",
                 user.Id,
-                UserRoles.NormalUser,
+                UserRoles.TenantAdmin,
                 roleResult.Errors.Count());
             await transaction.RollbackAsync(cancellationToken);
             return CreateUserAccountResult.Failure(ToAuthErrors(roleResult.Errors));
@@ -101,14 +101,14 @@ public sealed class IdentityUserAccountService(
             "Identity user created. UserId: {UserId}. TenantId: {TenantId}. Role: {Role}. PermissionCount: {PermissionCount}.",
             user.Id,
             user.TenantId,
-            UserRoles.NormalUser,
+            UserRoles.TenantAdmin,
             Permissions.All.Count);
 
         return CreateUserAccountResult.Success(new SignUpResponse(
             user.Id,
             user.Email!,
             user.FullName,
-            UserRoles.NormalUser,
+            UserRoles.TenantAdmin,
             user.IsDisabled ? "Disabled" : "Active"));
     }
 
