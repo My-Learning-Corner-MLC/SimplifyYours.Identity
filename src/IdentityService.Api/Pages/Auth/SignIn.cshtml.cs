@@ -5,6 +5,7 @@ using IdentityService.Contracts;
 using MediatR;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using OpenIddict.Server.AspNetCore;
@@ -46,9 +47,11 @@ public sealed class SignInModel(
     public bool ShowInvalidCredentialsError { get; private set; }
     public bool ShowInvalidAuthorizationRequestError { get; private set; }
     public string InvalidAuthorizationRequestErrorMessage { get; private set; } = string.Empty;
+    public bool RememberMe { get; private set; }
 
     public string EmailFieldName => HostedSignInConstants.EmailFieldName;
     public string PasswordFieldName => HostedSignInConstants.PasswordFieldName;
+    public string RememberMeFieldName => HostedSignInConstants.RememberMeFieldName;
 
     public IActionResult OnGet()
     {
@@ -72,6 +75,8 @@ public sealed class SignInModel(
             "invalid_credentials",
             StringComparison.Ordinal);
 
+        RememberMe = ParseRememberMe(Request.Query[RememberMeFieldName]);
+
         return Page();
     }
 
@@ -85,6 +90,8 @@ public sealed class SignInModel(
             logger.LogWarning("Hosted sign-in POST rejected because authorization parameters were invalid.");
             return RenderInvalidAuthorizationRequest(invalidRequestMessage);
         }
+
+        RememberMe = ParseRememberMe(Request.Form[RememberMeFieldName]);
 
         var openIddictRequest = HttpContext.GetOpenIddictServerRequest();
 
@@ -105,13 +112,33 @@ public sealed class SignInModel(
             return RedirectToPage("/Auth/SignIn", BuildInvalidCredentialsRedirectValues());
         }
 
-        logger.LogInformation("Hosted sign-in succeeded. UserId: {UserId}.", result.User!.UserId);
+        logger.LogInformation(
+            "Hosted sign-in succeeded. UserId: {UserId}. PersistentSession: {Persistent}.",
+            result.User!.UserId,
+            RememberMe);
 
         var principal = OpenIddictClaimsPrincipalFactory.Create(result.User!, openIddictRequest);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = RememberMe,
+                ExpiresUtc = RememberMe ? DateTimeOffset.UtcNow.AddDays(30) : null,
+                AllowRefresh = true
+            });
 
         return SignIn(
             principal,
             OpenIddictServerAspNetCoreDefaults.AuthenticationScheme);
+    }
+
+    private static bool ParseRememberMe(Microsoft.Extensions.Primitives.StringValues value)
+    {
+        var raw = value.ToString();
+        return string.Equals(raw, "true", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(raw, "on", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool TryValidateAuthorizationParameters(
@@ -161,6 +188,11 @@ public sealed class SignInModel(
                 StringComparer.Ordinal));
 
         values["error"] = "invalid_credentials";
+
+        if (RememberMe)
+        {
+            values[RememberMeFieldName] = "true";
+        }
 
         return values;
     }

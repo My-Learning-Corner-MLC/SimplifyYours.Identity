@@ -1,67 +1,273 @@
 @page "/auth/sign-in"
+@using IdentityService.Api.Auth
 @model IdentityService.Api.Pages.Auth.SignInModel
 @{
     Layout = "/Pages/Shared/_AuthLayout.cshtml";
 }
 
-<main class="auth-page d-flex align-items-center py-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-12 col-sm-10 col-md-8 col-lg-5">
-                <section class="auth-card bg-white shadow-sm">
-                    <div class="p-4 p-sm-5">
-                        <h1 class="h3 mb-2">Sign in</h1>
-                        <p class="text-body-secondary mb-4">Continue to Simplify Yours</p>
-
-                        @if (Model.ShowInvalidAuthorizationRequestError)
-                        {
-                            <div class="alert alert-warning" role="alert">
-                                @Model.InvalidAuthorizationRequestErrorMessage
-                            </div>
-                        }
-
-                        @if (Model.ShowInvalidCredentialsError)
-                        {
-                            <div class="alert alert-danger" role="alert">
-                                Invalid email or password.
-                            </div>
-                        }
-
-                        @if (!Model.ShowInvalidAuthorizationRequestError)
-                        {
-                            <form method="post" action="@Model.FormAction" novalidate>
-                                @Html.AntiForgeryToken()
-                                @foreach (var parameter in Model.AuthorizationParameters)
-                                {
-                                    <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
-                                }
-
-                                <div class="mb-3">
-                                    <label for="sign-in-email" class="form-label">Email</label>
-                                    <input id="sign-in-email"
-                                           name="@Model.EmailFieldName"
-                                           type="email"
-                                           class="form-control form-control-lg"
-                                           autocomplete="username"
-                                           required />
-                                </div>
-
-                                <div class="mb-4">
-                                    <label for="sign-in-password" class="form-label">Password</label>
-                                    <input id="sign-in-password"
-                                           name="@Model.PasswordFieldName"
-                                           type="password"
-                                           class="form-control form-control-lg"
-                                           autocomplete="current-password"
-                                           required />
-                                </div>
-
-                                <button type="submit" class="btn btn-primary btn-lg w-100">Sign in</button>
-                            </form>
-                        }
-                    </div>
-                </section>
+<main class="auth-page">
+    @if (Model.ShowInvalidAuthorizationRequestError)
+    {
+        <div class="auth-invalid-request">
+            <div class="alert alert-warning" role="alert">
+                @Model.InvalidAuthorizationRequestErrorMessage
             </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <section class="auth-card" aria-labelledby="auth-card-heading">
+            <aside class="auth-card__brand-panel" aria-hidden="true">
+                <div class="auth-card__brand-glow auth-card__brand-glow--top-right"></div>
+                <div class="auth-card__brand-glow auth-card__brand-glow--mid-right"></div>
+                <div class="auth-card__brand-glow auth-card__brand-glow--bottom-left"></div>
+
+                <div class="auth-card__wordmark">
+                    <span class="auth-card__wordmark-orb"></span>
+                    <span class="auth-card__wordmark-text">
+                        <span class="auth-card__wordmark-text-primary">Simplify</span><span class="auth-card__wordmark-text-secondary">Yours</span>
+                    </span>
+                </div>
+
+                <p class="auth-card__brand-tagline">Sign in to pick up where you left off.</p>
+
+                <div class="auth-card__brand-spacer"></div>
+
+                <div class="auth-card__brand-headline">
+                    <p class="auth-card__brand-eyebrow">A WARM WELCOME BACK</p>
+                    <h2 class="auth-card__brand-heading">
+                        Welcome back to <em>your occasions.</em>
+                    </h2>
+                    <span class="auth-card__brand-rule"></span>
+                    <p class="auth-card__brand-lede">
+                        Sign in to pick up where you left off &mdash; three RSVPs, a vendor reply, and a table chart that has been quietly arranging itself.
+                    </p>
+                </div>
+
+                <div class="auth-card__brand-spacer"></div>
+
+                <figure class="auth-card__testimonial">
+                    <blockquote class="auth-card__testimonial-quote">
+                        &ldquo;Everything you need to plan something memorable &mdash; kept together, calmly, on one warm page.&rdquo;
+                    </blockquote>
+                    <figcaption class="auth-card__testimonial-attribution">
+                        <span class="auth-card__testimonial-avatar" aria-hidden="true">E</span>
+                        <span>
+                            <span class="auth-card__testimonial-name">Eleanor Whitmore</span>
+                            <span class="auth-card__testimonial-meta">Host &middot; Lake Como, Sep 2026</span>
+                        </span>
+                    </figcaption>
+                </figure>
+
+                <div class="auth-card__brand-footer">
+                    <span>&copy; 2026 &middot; SIMPLIFYYOURS</span>
+                    <span class="auth-card__brand-footer-links">
+                        <span>PRIVACY</span>
+                        <span>TERMS</span>
+                        <span>SUPPORT</span>
+                    </span>
+                </div>
+            </aside>
+
+            <div class="auth-card__form-panel">
+                <header class="auth-card__form-header">
+                    <p class="auth-card__form-eyebrow">SIGN IN</p>
+                    <p class="auth-card__form-switch">
+                        New to SimplifyYours?<a class="auth-card__form-switch-link" href="#" aria-disabled="true">Create an account</a>
+                    </p>
+                </header>
+
+                <div class="auth-card__form-heading">
+                    <h1 id="auth-card-heading" class="auth-card__form-title">Sign in.</h1>
+                    <span class="auth-card__form-rule"></span>
+                    <p class="auth-card__form-lede">Use your email and password to continue to your account.</p>
+                </div>
+
+                <form id="auth-sign-in-form" class="auth-form" method="post" action="@Model.FormAction" novalidate>
+                    @Html.AntiForgeryToken()
+                    @foreach (var parameter in Model.AuthorizationParameters)
+                    {
+                        <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+                    }
+
+                    <div class="auth-field" data-auth-field="email">
+                        <label class="auth-field__label" for="sign-in-email">Email</label>
+                        <div class="auth-field__control">
+                            <svg class="auth-field__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M4 6h16v12H4z" />
+                                <path d="M4 7l8 6 8-6" />
+                            </svg>
+                            <input id="sign-in-email"
+                                   class="auth-field__input"
+                                   name="@Model.EmailFieldName"
+                                   type="email"
+                                   placeholder="name@yourplace.com"
+                                   autocomplete="username"
+                                   autofocus
+                                   required />
+                        </div>
+                        <div class="auth-field__error" role="alert" data-auth-required-error="email" style="display:none">
+                            <svg class="auth-field__error-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            <span>Enter your email address.</span>
+                        </div>
+                    </div>
+
+                    <div class="auth-field@(Model.ShowInvalidCredentialsError ? " auth-field--error" : "")" data-auth-field="password">
+                        <label class="auth-field__label" for="sign-in-password">Password</label>
+                        <div class="auth-field__control">
+                            <svg class="auth-field__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="4" y="11" width="16" height="10" rx="2" />
+                                <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                            </svg>
+                            <input id="sign-in-password"
+                                   class="auth-field__input"
+                                   name="@Model.PasswordFieldName"
+                                   type="password"
+                                   placeholder="Your password"
+                                   autocomplete="current-password"
+                                   required />
+                            <button type="button" class="auth-field__toggle" aria-label="Show password" aria-pressed="false" data-auth-password-toggle>
+                                <svg data-eye-hide width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                <svg data-eye-show width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                    <line x1="1" y1="1" x2="23" y2="23" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="auth-field__error" role="alert" data-auth-required-error="password" style="display:none">
+                            <svg class="auth-field__error-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            <span>Enter your password.</span>
+                        </div>
+                        @if (Model.ShowInvalidCredentialsError)
+                        {
+                            <div class="auth-field__error" role="alert">
+                                <svg class="auth-field__error-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                <span>
+                                    That email and password don&rsquo;t match. Try again, or <a class="auth-field__error-link" href="#" aria-disabled="true">reset your password.</a>
+                                </span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="auth-form__row">
+                        <label class="auth-remember-me">
+                            <input class="auth-remember-me__input"
+                                   type="checkbox"
+                                   name="@HostedSignInConstants.RememberMeFieldName"
+                                   value="true"
+                                   @(Model.RememberMe ? "checked" : null) />
+                            <span class="auth-remember-me__box" aria-hidden="true"></span>
+                            <span class="auth-remember-me__label">Remember me</span>
+                        </label>
+                        <a class="auth-form__forgot" href="#" aria-disabled="true">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="auth-button" data-auth-submit>
+                        <span class="auth-button__spinner" aria-hidden="true"></span>
+                        <span class="auth-button__label">Sign in</span>
+                        <span class="auth-button__arrow" aria-hidden="true">&rarr;</span>
+                    </button>
+                    <p class="auth-form__helper" aria-live="polite">just a moment</p>
+                </form>
+                <script>
+                    (function () {
+                        var toggle = document.querySelector('[data-auth-password-toggle]');
+                        var passwordInput = document.getElementById('sign-in-password');
+                        if (toggle && passwordInput) {
+                            var eyeShow = toggle.querySelector('[data-eye-show]');
+                            var eyeHide = toggle.querySelector('[data-eye-hide]');
+                            toggle.addEventListener('click', function () {
+                                var isHidden = passwordInput.type === 'password';
+                                passwordInput.type = isHidden ? 'text' : 'password';
+                                toggle.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+                                toggle.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+                                if (eyeShow) { eyeShow.style.display = isHidden ? 'none' : ''; }
+                                if (eyeHide) { eyeHide.style.display = isHidden ? '' : 'none'; }
+                            });
+                        }
+                    })();
+                </script>
+                <script>
+                    (function () {
+                        var form = document.getElementById('auth-sign-in-form');
+                        if (!form || form.dataset.loadingBound === 'true') { return; }
+                        form.dataset.loadingBound = 'true';
+
+                        var emailInput = document.getElementById('sign-in-email');
+                        var passwordInput = document.getElementById('sign-in-password');
+                        var emailField = document.querySelector('[data-auth-field="email"]');
+                        var passwordField = document.querySelector('[data-auth-field="password"]');
+                        var emailRequiredError = document.querySelector('[data-auth-required-error="email"]');
+                        var passwordRequiredError = document.querySelector('[data-auth-required-error="password"]');
+
+                        function clearFieldError(field, errorEl) {
+                            if (field) { field.classList.remove('auth-field--error'); }
+                            if (errorEl) { errorEl.style.display = 'none'; }
+                        }
+
+                        if (emailInput) {
+                            emailInput.addEventListener('input', function () {
+                                clearFieldError(emailField, emailRequiredError);
+                            });
+                        }
+                        if (passwordInput) {
+                            passwordInput.addEventListener('input', function () {
+                                clearFieldError(passwordField, passwordRequiredError);
+                            });
+                        }
+
+                        form.addEventListener('submit', function (e) {
+                            var emailEmpty = !emailInput || emailInput.value.trim().length === 0;
+                            var passwordEmpty = !passwordInput || passwordInput.value.length === 0;
+
+                            if (emailEmpty) {
+                                if (emailField) { emailField.classList.add('auth-field--error'); }
+                                if (emailRequiredError) { emailRequiredError.style.display = ''; }
+                            }
+                            if (passwordEmpty) {
+                                if (passwordField) { passwordField.classList.add('auth-field--error'); }
+                                if (passwordRequiredError) { passwordRequiredError.style.display = ''; }
+                            }
+
+                            if (emailEmpty || passwordEmpty) {
+                                e.preventDefault();
+                                if (emailEmpty && emailInput) { emailInput.focus(); }
+                                else if (passwordInput) { passwordInput.focus(); }
+                                return;
+                            }
+
+                            form.classList.add('auth-form--loading');
+                            var submit = form.querySelector('[data-auth-submit]');
+                            if (submit) {
+                                submit.disabled = true;
+                                var label = submit.querySelector('.auth-button__label');
+                                if (label) { label.textContent = 'Signing you in\u2026'; }
+                            }
+                        });
+                    })();
+                </script>
+
+                <div class="auth-card__form-spacer"></div>
+
+                <p class="auth-card__fineprint">
+                    By signing in you agree to our <a href="#" aria-disabled="true">terms</a> and <a href="#" aria-disabled="true">privacy policy</a>.
+                </p>
+            </div>
+        </section>
+    }
 </main>

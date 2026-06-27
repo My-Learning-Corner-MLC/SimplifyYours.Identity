@@ -1,6 +1,8 @@
 using IdentityService.Application;
 using IdentityService.Infrastructure.Identity;
 using IdentityService.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -69,7 +71,18 @@ public static class DependencyInjection
                     .EnableAuthorizationEndpointPassthrough();
             });
 
-        services.AddAuthentication();
+        services
+            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/auth/sign-in";
+                options.Cookie.Name = "simplifyyours.identity";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.ExpireTimeSpan = TimeSpan.FromHours(12);
+                options.SlidingExpiration = true;
+            });
         services.AddAuthorization();
         services.AddScoped<IUserAccountService, IdentityUserAccountService>();
 
