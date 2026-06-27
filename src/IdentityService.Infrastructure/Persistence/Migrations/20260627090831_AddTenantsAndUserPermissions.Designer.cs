@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace IdentityService.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(IdentityServiceDbContext))]
-    [Migration("20260622154304_AddTenantsAndUserPermissions")]
+    [Migration("20260627090831_AddTenantsAndUserPermissions")]
     partial class AddTenantsAndUserPermissions
     {
         /// <inheritdoc />
@@ -104,8 +104,7 @@ namespace IdentityService.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.HasIndex("TenantId")
-                        .HasDatabaseName("ix_users_tenant_id");
+                    b.HasIndex("TenantId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -113,35 +112,30 @@ namespace IdentityService.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("IdentityService.Infrastructure.Persistence.Tenant", b =>
                 {
                     b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.ToTable("tenants", (string)null);
+                    b.ToTable("SimplifyYoursTenants", (string)null);
                 });
 
             modelBuilder.Entity("IdentityService.Infrastructure.Persistence.UserPermission", b =>
                 {
                     b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Permission")
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("permission");
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("UserId", "Permission");
 
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_user_permissions_user_id");
+                    b.HasIndex("UserId");
 
-                    b.ToTable("user_permissions", (string)null);
+                    b.ToTable("SimplifyYoursUserPermissions", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>

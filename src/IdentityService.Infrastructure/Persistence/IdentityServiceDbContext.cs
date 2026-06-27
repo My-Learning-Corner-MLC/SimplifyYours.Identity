@@ -29,40 +29,34 @@ public sealed class IdentityServiceDbContext(DbContextOptions<IdentityServiceDbC
             entity.Property(user => user.TenantId)
                 .IsRequired();
 
-            entity.HasIndex(user => user.TenantId)
-                .HasDatabaseName("ix_users_tenant_id");
+            entity.HasIndex(user => user.TenantId);
         });
 
         builder.Entity<Tenant>(entity =>
         {
-            entity.ToTable("tenants");
+            entity.ToTable("SimplifyYoursTenants");
             entity.HasKey(tenant => tenant.Id);
 
             entity.Property(tenant => tenant.Id)
-                .HasColumnName("id")
                 .ValueGeneratedNever();
 
             entity.Property(tenant => tenant.CreatedAt)
-                .HasColumnName("created_at")
                 .IsRequired();
         });
 
         builder.Entity<UserPermission>(entity =>
         {
-            entity.ToTable("user_permissions");
+            entity.ToTable("SimplifyYoursUserPermissions");
             entity.HasKey(permission => new { permission.UserId, permission.Permission });
 
             entity.Property(permission => permission.UserId)
-                .HasColumnName("user_id")
                 .IsRequired();
 
             entity.Property(permission => permission.Permission)
-                .HasColumnName("permission")
                 .HasMaxLength(100)
                 .IsRequired();
 
-            entity.HasIndex(permission => permission.UserId)
-                .HasDatabaseName("ix_user_permissions_user_id");
+            entity.HasIndex(permission => permission.UserId);
         });
     }
 }

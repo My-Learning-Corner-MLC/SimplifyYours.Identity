@@ -19,51 +19,51 @@ namespace IdentityService.Infrastructure.Persistence.Migrations
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
             migrationBuilder.CreateTable(
-                name: "tenants",
+                name: "SimplifyYoursTenants",
                 columns: table => new
                 {
-                    id = table.Column<Guid>(type: "uuid", nullable: false),
-                    created_at = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_tenants", x => x.id);
+                    table.PrimaryKey("PK_SimplifyYoursTenants", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "user_permissions",
+                name: "SimplifyYoursUserPermissions",
                 columns: table => new
                 {
-                    user_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    permission = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Permission = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_user_permissions", x => new { x.user_id, x.permission });
+                    table.PrimaryKey("PK_SimplifyYoursUserPermissions", x => new { x.UserId, x.Permission });
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_users_tenant_id",
+                name: "IX_AspNetUsers_TenantId",
                 table: "AspNetUsers",
                 column: "TenantId");
 
             migrationBuilder.CreateIndex(
-                name: "ix_user_permissions_user_id",
-                table: "user_permissions",
-                column: "user_id");
+                name: "IX_SimplifyYoursUserPermissions_UserId",
+                table: "SimplifyYoursUserPermissions",
+                column: "UserId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "tenants");
+                name: "SimplifyYoursTenants");
 
             migrationBuilder.DropTable(
-                name: "user_permissions");
+                name: "SimplifyYoursUserPermissions");
 
             migrationBuilder.DropIndex(
-                name: "ix_users_tenant_id",
+                name: "IX_AspNetUsers_TenantId",
                 table: "AspNetUsers");
 
             migrationBuilder.DropColumn(
