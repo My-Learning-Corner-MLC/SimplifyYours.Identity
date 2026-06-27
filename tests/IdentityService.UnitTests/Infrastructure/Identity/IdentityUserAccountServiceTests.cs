@@ -3,6 +3,8 @@ using IdentityService.Domain.Identity;
 using IdentityService.Infrastructure.Identity;
 using IdentityService.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -273,12 +275,16 @@ public sealed class IdentityUserAccountServiceTests
         var roleManager = new Mock<RoleManager<IdentityRole<Guid>>>(
             roleStore.Object, null!, null!, null!, null!);
 
-        var dbContext = new Mock<IdentityServiceDbContext>();
+        var options = new DbContextOptionsBuilder<IdentityServiceDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .ConfigureWarnings(w => w.Ignore(InMemoryEventId.TransactionIgnoredWarning))
+            .Options;
+        var dbContext = new IdentityServiceDbContext(options);
 
         var service = new IdentityUserAccountService(
             userManager.Object,
             roleManager.Object,
-            dbContext.Object,
+            dbContext,
             TimeProvider.System,
             NullLogger<IdentityUserAccountService>.Instance);
 
