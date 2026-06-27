@@ -46,16 +46,16 @@ public sealed class IdentityUserAccountServiceTests
     }
 
     [Fact]
-    public async Task CreateNormalUserAsync_ReturnsSuccess_AndAssignsRole()
+    public async Task CreateTenantAdminAsync_ReturnsSuccess_AndAssignsRole()
     {
         var (service, userManager, roleManager) = CreateService();
-        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.NormalUser)).ReturnsAsync(true);
+        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.TenantAdmin)).ReturnsAsync(true);
         userManager.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
-        userManager.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), UserRoles.NormalUser))
+        userManager.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), UserRoles.TenantAdmin))
             .ReturnsAsync(IdentityResult.Success);
 
-        var result = await service.CreateNormalUserAsync(
+        var result = await service.CreateTenantAdminAsync(
             "Avery Nguyen",
             "avery@example.com",
             "Password1!",
@@ -65,51 +65,51 @@ public sealed class IdentityUserAccountServiceTests
         Assert.True(result.Succeeded);
         Assert.NotNull(result.User);
         Assert.Equal("avery@example.com", result.User!.Email);
-        Assert.Equal(UserRoles.NormalUser, result.User.Role);
+        Assert.Equal(UserRoles.TenantAdmin, result.User.Role);
     }
 
     [Fact]
-    public async Task CreateNormalUserAsync_CreatesRole_WhenMissing()
+    public async Task CreateTenantAdminAsync_CreatesRole_WhenMissing()
     {
         var (service, userManager, roleManager) = CreateService();
-        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.NormalUser)).ReturnsAsync(false);
+        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.TenantAdmin)).ReturnsAsync(false);
         roleManager.Setup(r => r.CreateAsync(It.IsAny<IdentityRole<Guid>>()))
             .ReturnsAsync(IdentityResult.Success);
         userManager.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
-        userManager.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), UserRoles.NormalUser))
+        userManager.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), UserRoles.TenantAdmin))
             .ReturnsAsync(IdentityResult.Success);
 
-        var result = await service.CreateNormalUserAsync(
+        var result = await service.CreateTenantAdminAsync(
             "Avery", "a@b.c", "Password1!", DateTimeOffset.UtcNow, CancellationToken.None);
 
         Assert.True(result.Succeeded);
-        roleManager.Verify(r => r.CreateAsync(It.Is<IdentityRole<Guid>>(role => role.Name == UserRoles.NormalUser)), Times.Once);
+        roleManager.Verify(r => r.CreateAsync(It.Is<IdentityRole<Guid>>(role => role.Name == UserRoles.TenantAdmin)), Times.Once);
     }
 
     [Fact]
-    public async Task CreateNormalUserAsync_Throws_WhenRoleCreationFails()
+    public async Task CreateTenantAdminAsync_Throws_WhenRoleCreationFails()
     {
         var (service, _, roleManager) = CreateService();
-        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.NormalUser)).ReturnsAsync(false);
+        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.TenantAdmin)).ReturnsAsync(false);
         roleManager.Setup(r => r.CreateAsync(It.IsAny<IdentityRole<Guid>>()))
             .ReturnsAsync(IdentityResult.Failed(new IdentityError { Code = "X", Description = "nope" }));
 
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => service.CreateNormalUserAsync(
+            () => service.CreateTenantAdminAsync(
                 "Avery", "a@b.c", "Password1!", DateTimeOffset.UtcNow, CancellationToken.None));
     }
 
     [Fact]
-    public async Task CreateNormalUserAsync_ReturnsFailure_WhenUserCreationFails()
+    public async Task CreateTenantAdminAsync_ReturnsFailure_WhenUserCreationFails()
     {
         var (service, userManager, roleManager) = CreateService();
-        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.NormalUser)).ReturnsAsync(true);
+        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.TenantAdmin)).ReturnsAsync(true);
         userManager.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Failed(
                 new IdentityError { Code = "Password", Description = "Too short." }));
 
-        var result = await service.CreateNormalUserAsync(
+        var result = await service.CreateTenantAdminAsync(
             "Avery", "a@b.c", "x", DateTimeOffset.UtcNow, CancellationToken.None);
 
         Assert.False(result.Succeeded);
@@ -119,17 +119,17 @@ public sealed class IdentityUserAccountServiceTests
     }
 
     [Fact]
-    public async Task CreateNormalUserAsync_ReturnsFailure_WhenRoleAssignmentFails()
+    public async Task CreateTenantAdminAsync_ReturnsFailure_WhenRoleAssignmentFails()
     {
         var (service, userManager, roleManager) = CreateService();
-        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.NormalUser)).ReturnsAsync(true);
+        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.TenantAdmin)).ReturnsAsync(true);
         userManager.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
             .ReturnsAsync(IdentityResult.Success);
-        userManager.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), UserRoles.NormalUser))
+        userManager.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), UserRoles.TenantAdmin))
             .ReturnsAsync(IdentityResult.Failed(
                 new IdentityError { Code = "Role", Description = "nope" }));
 
-        var result = await service.CreateNormalUserAsync(
+        var result = await service.CreateTenantAdminAsync(
             "Avery", "a@b.c", "Password1!", DateTimeOffset.UtcNow, CancellationToken.None);
 
         Assert.False(result.Succeeded);
@@ -138,14 +138,14 @@ public sealed class IdentityUserAccountServiceTests
     }
 
     [Fact]
-    public async Task CreateNormalUserAsync_ThrowsWhenCancelled()
+    public async Task CreateTenantAdminAsync_ThrowsWhenCancelled()
     {
         var (service, _, _) = CreateService();
         using var cts = new CancellationTokenSource();
         cts.Cancel();
 
         await Assert.ThrowsAsync<OperationCanceledException>(
-            () => service.CreateNormalUserAsync(
+            () => service.CreateTenantAdminAsync(
                 "Avery", "a@b.c", "p", DateTimeOffset.UtcNow, cts.Token));
     }
 
@@ -222,7 +222,7 @@ public sealed class IdentityUserAccountServiceTests
         userManager.Setup(u => u.CheckPasswordAsync(user, It.IsAny<string>())).ReturnsAsync(true);
         userManager.SetupGet(u => u.SupportsUserLockout).Returns(true);
         userManager.Setup(u => u.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success);
-        userManager.Setup(u => u.GetRolesAsync(user)).ReturnsAsync(new List<string> { UserRoles.NormalUser });
+        userManager.Setup(u => u.GetRolesAsync(user)).ReturnsAsync(new List<string> { UserRoles.TenantAdmin });
 
         var result = await service.ValidateCredentialsAsync("avery@example.com", "p", CancellationToken.None);
 
@@ -230,7 +230,7 @@ public sealed class IdentityUserAccountServiceTests
         Assert.NotNull(result.User);
         Assert.Equal("avery@example.com", result.User!.Email);
         Assert.Equal("Avery Nguyen", result.User.FullName);
-        Assert.Contains(UserRoles.NormalUser, result.User.Roles);
+        Assert.Contains(UserRoles.TenantAdmin, result.User.Roles);
         userManager.Verify(u => u.ResetAccessFailedCountAsync(user), Times.Once);
     }
 

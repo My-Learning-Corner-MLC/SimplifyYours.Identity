@@ -118,7 +118,7 @@ public sealed class SignInModelTests
             Guid.NewGuid(),
             "avery@example.com",
             "Avery Nguyen",
-            new[] { UserRoles.NormalUser }));
+            new[] { UserRoles.TenantAdmin }));
 
     private static IdentityService.Application.SignIn.SignInResult FailedSignIn() =>
         IdentityService.Application.SignIn.SignInResult.Failure(new[]
