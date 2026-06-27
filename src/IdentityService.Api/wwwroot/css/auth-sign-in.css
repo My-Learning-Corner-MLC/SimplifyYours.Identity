@@ -619,6 +619,76 @@ body {
     }
 }
 
+/* ============ Mobile (M1 / M2) — single column ============ */
+
+.auth-card__brand-tagline {
+    display: none;
+    margin: 8px 0 0 0;
+    font-size: 13px;
+    color: rgba(255, 252, 245, 0.78);
+    line-height: 1.55;
+}
+
+@media (max-width: 640px) {
+    .auth-page {
+        padding: 16px;
+        align-items: stretch;
+    }
+
+    .auth-card {
+        grid-template-columns: 1fr;
+        min-height: 0;
+        border-radius: 12px;
+    }
+
+    .auth-card__brand-panel {
+        padding: 20px 22px;
+        min-height: 0;
+    }
+
+    .auth-card__brand-glow,
+    .auth-card__brand-headline,
+    .auth-card__brand-spacer,
+    .auth-card__testimonial,
+    .auth-card__brand-footer {
+        display: none;
+    }
+
+    .auth-card__brand-tagline {
+        display: block;
+    }
+
+    .auth-card__form-panel {
+        padding: 32px 24px 36px;
+    }
+
+    .auth-card__form-heading {
+        margin-top: 28px;
+    }
+
+    .auth-card__form-title {
+        font-size: 34px;
+    }
+
+    .auth-card__form-lede {
+        font-size: 13.5px;
+    }
+
+    .auth-form {
+        margin-top: 24px;
+        gap: 16px;
+    }
+
+    .auth-form__row {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .auth-card__form-switch {
+        font-size: 12.5px;
+    }
+}
+
 .auth-card__form-spacer {
     flex: 1;
     min-height: 24px;
