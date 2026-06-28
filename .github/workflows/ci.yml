@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -27,4 +29,13 @@ jobs:
         run: dotnet build IdentityService.sln --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test IdentityService.sln --configuration Release --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:Threshold=80 /p:ThresholdType=line /p:ThresholdStat=total
+        run: dotnet test IdentityService.sln --configuration Release --no-build /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput=${{ github.workspace }}/TestResults/coverage.cobertura.xml
+
+      - name: Diff coverage (changed lines only, fail under 50%)
+        if: github.event_name == 'pull_request'
+        run: |
+          pipx install diff-cover
+          git fetch origin "${{ github.event.pull_request.base.ref }}" --depth=1
+          diff-cover "${{ github.workspace }}/TestResults/coverage.cobertura.xml" \
+            --compare-branch="origin/${{ github.event.pull_request.base.ref }}" \
+            --fail-under=50
