@@ -6,6 +6,7 @@ public static class Permissions
     public const string EventsView = "events.view";
     public const string EventsUpdate = "events.update";
     public const string GuestsAdd = "guests.add";
+    public const string GuestsView = "guests.view";
     public const string TenantManageUsers = "tenant.manage_users";
 
     public static IReadOnlyCollection<string> All { get; } = new[]
@@ -14,6 +15,7 @@ public static class Permissions
         EventsView,
         EventsUpdate,
         GuestsAdd,
+        GuestsView,
         TenantManageUsers,
     };
 }
