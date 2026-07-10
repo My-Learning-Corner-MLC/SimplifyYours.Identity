@@ -71,17 +71,13 @@
 
             <div class="auth-card__form-panel">
                 <header class="auth-card__form-header">
-                    <p class="auth-card__form-eyebrow">SIGN IN</p>
+                    <h1 id="auth-card-heading" class="auth-card__form-title">Sign in.</h1>
                     <p class="auth-card__form-switch">
                         New to SimplifyYours?<a class="auth-card__form-switch-link" href="#" aria-disabled="true">Create an account</a>
                     </p>
                 </header>
-
-                <div class="auth-card__form-heading">
-                    <h1 id="auth-card-heading" class="auth-card__form-title">Sign in.</h1>
-                    <span class="auth-card__form-rule"></span>
-                    <p class="auth-card__form-lede">Use your email and password to continue to your account.</p>
-                </div>
+                <span class="auth-card__form-rule"></span>
+                <p class="auth-card__form-lede">Use your email and password to continue to your account.</p>
 
                 <form id="auth-sign-in-form" class="auth-form" method="post" action="@Model.FormAction" novalidate>
                     @Html.AntiForgeryToken()
