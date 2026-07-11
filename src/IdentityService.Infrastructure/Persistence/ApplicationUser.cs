@@ -13,4 +13,6 @@ public sealed class ApplicationUser : IdentityUser<Guid>
     public DateTimeOffset? TermsAcceptedAt { get; set; }
 
     public Guid TenantId { get; set; }
+
+    public string[] Permissions { get; set; } = [];
 }

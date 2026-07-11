@@ -59,6 +59,7 @@ public sealed class IdentityUserAccountService(
             CreatedAt = termsAcceptedAt,
             TermsAcceptedAt = termsAcceptedAt,
             TenantId = tenant.Id,
+            Permissions = Permissions.All.ToArray(),
         };
 
         var createResult = await userManager.CreateAsync(user, password);
@@ -85,16 +86,6 @@ public sealed class IdentityUserAccountService(
             return CreateUserAccountResult.Failure(ToAuthErrors(roleResult.Errors));
         }
 
-        foreach (var permission in Permissions.All)
-        {
-            dbContext.UserPermissions.Add(new UserPermission
-            {
-                UserId = user.Id,
-                Permission = permission,
-            });
-        }
-
-        await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
         logger.LogInformation(
@@ -159,11 +150,7 @@ public sealed class IdentityUserAccountService(
 
         var roles = await userManager.GetRolesAsync(user);
 
-        var permissions = await dbContext.UserPermissions
-            .AsNoTracking()
-            .Where(permission => permission.UserId == user.Id)
-            .Select(permission => permission.Permission)
-            .ToArrayAsync(cancellationToken);
+        var permissions = user.Permissions;
 
         logger.LogInformation(
             "Credentials validation succeeded. UserId: {UserId}. TenantId: {TenantId}. RoleCount: {RoleCount}. PermissionCount: {PermissionCount}.",
