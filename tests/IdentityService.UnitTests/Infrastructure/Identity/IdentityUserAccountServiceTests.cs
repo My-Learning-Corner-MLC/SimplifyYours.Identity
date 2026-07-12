@@ -71,6 +71,29 @@ public sealed class IdentityUserAccountServiceTests
     }
 
     [Fact]
+    public async Task CreateTenantAdminAsync_AssignsAllPermissions_OnSuccess()
+    {
+        var (service, userManager, roleManager) = CreateService();
+        roleManager.Setup(r => r.RoleExistsAsync(UserRoles.TenantAdmin)).ReturnsAsync(true);
+        ApplicationUser? createdUser = null;
+        userManager.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+            .Callback<ApplicationUser, string>((user, _) => createdUser = user)
+            .ReturnsAsync(IdentityResult.Success);
+        userManager.Setup(u => u.AddToRoleAsync(It.IsAny<ApplicationUser>(), UserRoles.TenantAdmin))
+            .ReturnsAsync(IdentityResult.Success);
+
+        await service.CreateTenantAdminAsync(
+            "Avery Nguyen",
+            "avery@example.com",
+            "Password1!",
+            DateTimeOffset.UtcNow,
+            CancellationToken.None);
+
+        Assert.NotNull(createdUser);
+        Assert.Equal(Permissions.All.ToArray(), createdUser!.Permissions);
+    }
+
+    [Fact]
     public async Task CreateTenantAdminAsync_CreatesRole_WhenMissing()
     {
         var (service, userManager, roleManager) = CreateService();
@@ -234,6 +257,32 @@ public sealed class IdentityUserAccountServiceTests
         Assert.Equal("Avery Nguyen", result.User.FullName);
         Assert.Contains(UserRoles.TenantAdmin, result.User.Roles);
         userManager.Verify(u => u.ResetAccessFailedCountAsync(user), Times.Once);
+    }
+
+    [Fact]
+    public async Task ValidateCredentialsAsync_ReturnsUsersStoredPermissions()
+    {
+        var (service, userManager, _) = CreateService();
+        var user = new ApplicationUser
+        {
+            Id = Guid.NewGuid(),
+            Email = "avery@example.com",
+            FullName = "Avery Nguyen",
+            Permissions = [Permissions.EventsView, Permissions.GuestsView],
+        };
+        userManager.Setup(u => u.FindByEmailAsync(It.IsAny<string>())).ReturnsAsync(user);
+        userManager.Setup(u => u.IsLockedOutAsync(user)).ReturnsAsync(false);
+        userManager.Setup(u => u.CheckPasswordAsync(user, It.IsAny<string>())).ReturnsAsync(true);
+        userManager.SetupGet(u => u.SupportsUserLockout).Returns(true);
+        userManager.Setup(u => u.ResetAccessFailedCountAsync(user)).ReturnsAsync(IdentityResult.Success);
+        userManager.Setup(u => u.GetRolesAsync(user)).ReturnsAsync(new List<string> { UserRoles.TenantAdmin });
+
+        var result = await service.ValidateCredentialsAsync("avery@example.com", "p", CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(
+            new[] { Permissions.EventsView, Permissions.GuestsView },
+            result.User!.Permissions);
     }
 
     [Fact]
